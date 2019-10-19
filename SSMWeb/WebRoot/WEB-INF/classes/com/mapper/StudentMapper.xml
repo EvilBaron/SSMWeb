@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.dao.StudentMapper" >
+  <resultMap id="BaseResultMap" type="com.bean.Student" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="sex" property="sex" jdbcType="BIT" />
+    <result column="birthday" property="birthday" jdbcType="TIMESTAMP" />
+    <result column="gradeId" property="gradeId" jdbcType="INTEGER" />
+    <result column="score" property="score" jdbcType="REAL" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, name, sex, birthday, gradeId, score
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from student
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from student
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.bean.Student" >
+    insert into student (id, name, sex, birthday, 
+      gradeId, score)
+    values (#{id,jdbcType=INTEGER}, #{name,jdbcType=VARCHAR}, #{sex,jdbcType=BIT}, #{birthday,jdbcType=TIMESTAMP}, 
+      #{gradeId,jdbcType=INTEGER}, #{score,jdbcType=REAL})
+  </insert>
+  <insert id="insertSelective" parameterType="com.bean.Student" >
+    insert into student
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="name != null" >
+        name,
+      </if>
+      <if test="sex != null" >
+        sex,
+      </if>
+      <if test="birthday != null" >
+        birthday,
+      </if>
+      <if test="gradeId != null" >
+        gradeId,
+      </if>
+      <if test="score != null" >
+        score,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="sex != null" >
+        #{sex,jdbcType=BIT},
+      </if>
+      <if test="birthday != null" >
+        #{birthday,jdbcType=TIMESTAMP},
+      </if>
+      <if test="gradeId != null" >
+        #{gradeId,jdbcType=INTEGER},
+      </if>
+      <if test="score != null" >
+        #{score,jdbcType=REAL},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.bean.Student" >
+    update student
+    <set >
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="sex != null" >
+        sex = #{sex,jdbcType=BIT},
+      </if>
+      <if test="birthday != null" >
+        birthday = #{birthday,jdbcType=TIMESTAMP},
+      </if>
+      <if test="gradeId != null" >
+        gradeId = #{gradeId,jdbcType=INTEGER},
+      </if>
+      <if test="score != null" >
+        score = #{score,jdbcType=REAL},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.bean.Student" >
+    update student
+    set name = #{name,jdbcType=VARCHAR},
+      sex = #{sex,jdbcType=BIT},
+      birthday = #{birthday,jdbcType=TIMESTAMP},
+      gradeId = #{gradeId,jdbcType=INTEGER},
+      score = #{score,jdbcType=REAL}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  
+  <resultMap type="student" id="stu">
+  	<id column="id" property="id"/>
+  	<result column="name" property="name"/>
+  	<result column="sex" property="sex"/>
+  	<result column="birthday" property="birthday"/>
+  	<result column="score" property="score"/>
+  	<association property="grade" javaType="grade">
+  		<id column="gid" property="id"/>
+  		<result column="gname" property="name"/>
+  	</association>
+  </resultMap>
+  
+  <select id="findAll" resultMap="stu">
+  	SELECT s.*,g.id gid,g.name gname FROM student s, Grade g
+WHERE s.gradeId=g.id 
+	<if test="name!=null and name!=''">
+	and s.name like concat('%',#{name},'%')
+	</if>
+	<if test="score!=null and score!=''">
+	and score>=#{score}
+	</if>
+	order by s.id
+	limit #{offset},#{limit}
+  </select>
+  <select id="selectCount" resultType="int">
+  select count(*) from Student
+  <where>
+  	<if test="name!=null and name!=''">
+		and name like concat('%',#{name},'%')
+	</if>
+	<if test="score!=null and score!=''">
+		and score>=#{score}
+	</if>
+  </where>
+  </select>
+</mapper>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+			http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
+			http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+
+
+	<!-- 加载数据库连接的资源文件 -->
+	<bean id="propConfig"
+		class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+		<property name="location">
+			<value>classpath:jdbc.properties</value>
+		</property>
+	</bean>
+
+	<!-- 配置数据源：代替mybatis框架中的mybatis-config.xml -->
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="${driver}"></property>
+		<property name="url" value="${url}"></property>
+		<property name="username" value="${uname}"></property>
+		<property name="password" value="${upwd}"></property>
+	</bean>
+
+	<!-- 配置SqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"></property>
+
+		<!-- 加载所有的dao接口的映射文件 -->
+		<property name="mapperLocations" value="classpath:com/mapper/**/*.xml"></property>
+
+		<!-- 统一给所有实体类命别名 ,只需要指定所有实体类所在的包命 -->
+		<property name="typeAliasesPackage" value="com.bean"></property>
+
+	
+
+	</bean>
+
+	<!-- 配置映射扫描对象：
+	统一将sqlSessionFactory对象注入到所有的接口实现类中 -->
+	<bean id="msc" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 指定需要注入SqlSessionFactory对象的所有接口所在的包名 -->
+		<property name="basePackage" value="com.dao"></property>
+
+		<!-- 指定扫描对象在以上接口中注入的对象的bean的名称 -->
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+
+	</bean>
+
+	<!-- 配置事务对象 -->
+	<bean id="txManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	
+		<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+		<tx:method name="find*" propagation="SUPPORTS"/>
+		<tx:method name="add*" propagation="REQUIRED"/>
+		<tx:method name="del*" propagation="REQUIRED"/>
+		<tx:method name="update*" propagation="REQUIRED"/>
+		<tx:method name="*" propagation="REQUIRED"/>
+		</tx:attributes>
+	</tx:advice>
+
+		<!-- 定义切面 -->
+	<aop:config>
+		<!-- 定义切入点  哪些方法需要事务增强 -->
+	<aop:pointcut id="serviceMethod"
+	expression="execution(* com.controller..*.*(..))"/>
+	<aop:advisor advice-ref="txAdvice" pointcut-ref="serviceMethod"/>
+	</aop:config>
+	
+
+</beans>
